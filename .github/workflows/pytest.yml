@@ -1,0 +1,68 @@
+name: API Test Suite
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install beautifulsoup4
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "CURRENT_TIME=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+      - name: Run pytest with HTML report
+        run: |
+          mkdir -p reports
+          pytest -v test_books_api.py --html=reports/report-${CURRENT_TIME}.html --self-contained-html
+      - name: Generate dashboard index.html with pass/fail
+        run: |
+          python - <<EOF
+          import os
+          from bs4 import BeautifulSoup
+          report_dir = "reports"
+          report_files = sorted([f for f in os.listdir(report_dir) if f.startswith("report-") and f.endswith(".html")], reverse=True)
+          html = "<html><head><title>API Test Reports</title></head><body><h1>API Test Reports</h1><ul>"
+          for report in report_files:
+              path = os.path.join(report_dir, report)
+              with open(path, "r", encoding="utf-8") as f:
+                  soup = BeautifulSoup(f, "html.parser")
+                  # Extract test summary
+                  summary = soup.find("div", {"class":"summary"})
+                  if summary:
+                      result_text = summary.get_text(strip=True).replace("\n"," ")
+                      if "failed" in result_text.lower():
+                          color = "red"
+                      else:
+                          color = "green"
+                  else:
+                      result_text = "No summary found"
+                      color = "black"
+                  html += f"<li><a href='{report}' style='color:{color}'>{report}</a> - {result_text}</li>"
+            html += "</ul></body></html>"
+            with open(os.path.join(report_dir, "index.html"), "w", encoding="utf-8") as f:
+              f.write(html)
+             EOF
+          - name: Deploy reports to GitHub Pages
+         uses: peaceiris/actions-gh-pages@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: reports
+          publish_branch: gh-pages
+          force_orphan: true
+          keep_files: true
+          commit_message: "Update Pytest reports with summary"
+          allow_empty_commit: true
+

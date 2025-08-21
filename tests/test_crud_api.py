@@ -1,4 +1,4 @@
-from crud_api import API_crud
+from apis.crud_api import API_crud
 
 posts = API_crud()
 
