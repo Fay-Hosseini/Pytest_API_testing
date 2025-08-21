@@ -1,11 +1,14 @@
 import pytest
 import requests
 import json
+import os
 
 BASE_URL = "https://fakerestapi.azurewebsites.net/api/v1/Books"
 
 # Load test data once at import
-with open("test_data.json", "r") as f:
+
+file_path = os.path.join(os.path.dirname(__file__), "test_data.json")
+with open(file_path, "r") as f:
     TEST_DATA = json.load(f)
 
 @pytest.fixture(scope="session")
