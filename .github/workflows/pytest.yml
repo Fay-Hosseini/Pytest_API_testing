@@ -51,10 +51,7 @@ jobs:
                   summary = soup.find("div", {"class": "summary"})
                   if summary:
                       result_text = summary.get_text(strip=True).replace("\n", " ")
-                      if "failed" in result_text.lower():
-                          color = "red"
-                      else:
-                          color = "green"
+                      color = "red" if "failed" in result_text.lower() else "green"
                   else:
                       result_text = "No summary found"
                       color = "black"
@@ -67,9 +64,9 @@ jobs:
       - name: Deploy reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.PERSONAL_TOKEN }}
+          github_token: ${{ secrets.PERSONAL_TOKEN }} # Use a Personal Access Token with repo access
           publish_dir: ./reports
           publish_branch: gh-pages
           force_orphan: true
           commit_message: "Update Pytest reports"
-
+          allow_empty_commit: true
