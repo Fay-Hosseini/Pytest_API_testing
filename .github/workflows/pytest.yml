@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-html beautifulsoup4
+          pip install pytest pytest-html beautifulsoup4 requests
 
       - name: Generate timestamp
         id: timestamp
@@ -30,7 +30,7 @@ jobs:
       - name: Run pytest with HTML report
         run: |
           mkdir -p reports
-          pytest -v --html=reports/report-${CURRENT_TIME}.html --self-contained-html
+          PYTHONPATH=. pytest -v --html=reports/report-${CURRENT_TIME}.html --self-contained-html
 
       - name: Generate dashboard index.html with pass/fail
         run: |
