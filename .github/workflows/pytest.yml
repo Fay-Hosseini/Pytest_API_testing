@@ -30,7 +30,7 @@ jobs:
       - name: Run pytest with HTML report
         run: |
           mkdir -p reports
-          pytest -v test_books_api.py --html=reports/report-${CURRENT_TIME}.html --self-contained-html
+          pytest -v --html=reports/report-${CURRENT_TIME}.html --self-contained-html
 
       - name: Generate dashboard index.html with pass/fail
         run: |
